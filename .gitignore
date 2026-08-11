@@ -2,6 +2,8 @@
 .env
 *.env
 secrets.json
+soc-pokec-relationships.txt
+*.txt
 
 # Data and dynamic artifacts
 dataset/data/

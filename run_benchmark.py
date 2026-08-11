@@ -60,7 +60,7 @@ def get_mock_results() -> Dict[str, Any]:
     return {
         "CognoDB Cloud": {
             "specs": "Burstable 0.5 vCPU, 256 MB RAM, 1 GB Disk (c0 Free)",
-            "ingest": {"total_nodes": 25000, "total_edges": 150000, "nodes_per_sec": 4250.0, "edges_per_sec": 3120.0, "total_wall_clock_sec": 53.9},
+            "ingest": {"total_nodes": 74062, "total_edges": 150000, "nodes_per_sec": 4250.0, "edges_per_sec": 3120.0, "total_wall_clock_sec": 53.9},
             "read": {
                 "1hop_traversal": {"p50": 1.45, "p95": 2.85, "mean": 1.62},
                 "2hop_traversal": {"p50": 6.80, "p95": 12.40, "mean": 7.30},

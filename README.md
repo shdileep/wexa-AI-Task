@@ -85,11 +85,12 @@ To avoid methodology errors, all database platforms were constrained to equivale
 
 ## 3. Dataset Specification
 
-- **Graph Structure**: Social Network Follower Graph (`:User` nodes connected by `:FOLLOWS` relationships).
+- **Dataset Source**: **SNAP soc-Pokec Social Network** (`soc-pokec-relationships.txt` from Stanford Network Analysis Platform).
+- **Graph Structure**: Slovakian Pokec Social Network (`:User` nodes connected by `:FOLLOWS` relationships).
 - **Node Properties**: `id` (INT64, Primary Key), `username` (STRING), `age` (INT64), `category` (STRING), `created_at` (STRING).
 - **Relationship Properties**: `weight` (FLOAT), `interactions` (INT64).
-- **Scale**: **25,000 Nodes** and **150,000 Relationships**.
-- **Distribution**: Preferential attachment (power-law degree distribution with high-degree hubs).
+- **Scale**: **74,062 Unique Nodes** and **150,000 Relationships**.
+- **Distribution**: Real-world power-law social network degree distribution.
 
 ---
 
