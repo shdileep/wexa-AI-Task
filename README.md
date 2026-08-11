@@ -44,7 +44,7 @@ cp .env.example .env
 ### Environment Configuration (`.env`)
 Edit `.env` with your CognoDB Cloud credentials obtained from [console.cognodb.com](https://console.cognodb.com/signup):
 ```ini
-COGNODB_URI=bolt+s://<instance-id>.databases.cognodb.cloud
+COGNODB_URI=bolt+s://db-0040bc7a.databases.cognodb.com
 COGNODB_USER=cognodb
 COGNODB_PASSWORD=your_generated_password
 ```
