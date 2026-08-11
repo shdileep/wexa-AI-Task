@@ -6,7 +6,8 @@ soc-pokec-relationships.txt
 *.txt
 
 # Data and dynamic artifacts
-dataset/data/
+dataset/data/*
+!dataset/data/.gitkeep
 kuzu_db_data/
 *.db
 *.csv
