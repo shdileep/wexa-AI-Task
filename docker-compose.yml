@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  neo4j:
+    image: neo4j:5.14.0-community
+    container_name: benchmark-neo4j
+    ports:
+      - "7687:7687"
+      - "7474:7474"
+    environment:
+      - NEO4J_AUTH=neo4j/password123
+      - NEO4J_dbms_memory_heap_initial__size=256m
+      - NEO4J_dbms_memory_heap_max__size=256m
+      - NEO4J_dbms_memory_pagecache_size=256m
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+
+  memgraph:
+    image: memgraph/memgraph:2.14.0
+    container_name: benchmark-memgraph
+    ports:
+      - "7688:7687"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+
+  falkordb:
+    image: falkordb/falkordb:latest
+    container_name: benchmark-falkordb
+    ports:
+      - "6379:6379"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M

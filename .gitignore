@@ -1,0 +1,30 @@
+# Environment & secrets
+.env
+*.env
+secrets.json
+
+# Data and dynamic artifacts
+dataset/data/
+kuzu_db_data/
+*.db
+*.csv
+*.parquet
+
+# Python cache & virtualenv
+__pycache__/
+*.pyc
+.pytest_cache/
+venv/
+env/
+.venv/
+
+# Results & temporary benchmark logs
+results/*.json
+!results/.gitkeep
+charts/*.png
+!charts/.gitkeep
+
+# IDE / System
+.vscode/
+.idea/
+.DS_Store
