@@ -1,18 +1,17 @@
 # Graph Database Cloud Benchmarking Suite
 ### Benchmarking CognoDB Cloud against Neo4j, Memgraph, FalkorDB & Kùzu DB
 
-> **Take-Home Assignment for Wexa AI**  
-> **Deliverable:** Reproducible Graph Database Benchmark Suite & Technical Analysis  
-> **Target Cloud:** CognoDB Cloud (Free c0 Tier)  
-> **Repository Author:** Candidate Submission for Wexa AI  
+> **Wexa AI — Take-Home Assignment Deliverable**  
+> **Topic:** Reproducible Graph Database Cloud Benchmark Suite & Technical Analysis  
+> **Target Cloud Platform:** CognoDB Cloud (Free `c0` Tier)  
 
 ---
 
 ## Executive Summary
 
-This repository presents a reproducible, open-source benchmark suite designed to evaluate **CognoDB Cloud** against four leading graph database engines under strict resource parity constraints (**0.5 vCPU, 256 MB – 512 MB RAM**).
+This repository presents a fully reproducible, open-source benchmark suite designed to evaluate **CognoDB Cloud** against four leading graph database engines under strict resource parity constraints (**0.5 vCPU, 256 MB – 512 MB RAM**).
 
-The benchmark evaluates all platforms on identical workloads generated from a standard social network graph containing **25,000 nodes** and **150,000 relationships**. Metrics encompass data loading throughput, 1-to-3 hop traversals, point lookups, indexed filtering, aggregations, concurrent client sweeps (1, 10, 40 workers), and memory/storage footprint.
+The benchmark evaluates all engines on identical workloads using a real-world social network graph derived from the **Stanford Network Analysis Platform (SNAP) Pokec dataset** (**74,062 nodes** and **150,000 relationships**). Metrics encompass data loading throughput, 1-to-3 hop traversals, point lookups, indexed filtering, aggregations, concurrent multi-client sweeps (1, 10, 40 workers), and memory/storage footprint.
 
 ![Ingest Speed](charts/ingest_throughput.png)
 ![Traversal Latencies](charts/traversal_latencies.png)
@@ -25,14 +24,15 @@ The benchmark evaluates all platforms on identical workloads generated from a st
 Anyone with a free-tier CognoDB Cloud account or local Docker environment can reproduce these results with a single command.
 
 ### Prerequisites
-- Python 3.10+
-- (Optional) Docker & Docker Compose (for local tier-parity baseline engines)
+- **Python**: 3.10+
+- **Docker & Docker Compose** (Optional): For running local tier-parity baseline engines (`docker-compose up -d`)
 
-### Installation
+### Installation & Environment Setup
+
 ```bash
 # 1. Clone the repository
-git clone https://github.com/wexa-ai/graph-cloud-benchmark.git
-cd graph-cloud-benchmark
+git clone https://github.com/shdileep/wexa-AI-Task.git
+cd wexa-AI-Task
 
 # 2. Install pinned dependencies
 pip install -r requirements.txt
@@ -42,11 +42,13 @@ cp .env.example .env
 ```
 
 ### Environment Configuration (`.env`)
-Edit `.env` with your CognoDB Cloud credentials obtained from [console.cognodb.com](https://console.cognodb.com/signup):
+
+Obtain your free instance connection URI and password from [console.cognodb.com](https://console.cognodb.com/signup) and populate `.env`:
+
 ```ini
-COGNODB_URI=bolt+s://db-0040bc7a.databases.cognodb.com
+COGNODB_URI=bolt+s://<instance-id>.databases.cognodb.com
 COGNODB_USER=cognodb
-COGNODB_PASSWORD=your_generated_password
+COGNODB_PASSWORD=your_cognodb_password_here
 ```
 
 ### Execution Commands
@@ -62,7 +64,7 @@ python run_benchmark.py --quick-run
 python run_benchmark.py --mock-run
 ```
 
-To launch the local competitor engines in Docker under capped resource limits matching CognoDB:
+To spin up local competitor baseline containers capped at 0.5 vCPU / 512 MB RAM matching CognoDB:
 ```bash
 docker-compose up -d
 ```
@@ -71,7 +73,7 @@ docker-compose up -d
 
 ## 2. Databases Compared & Resource Parity Setup
 
-To avoid methodology errors, all database platforms were constrained to equivalent hardware boundaries (**0.5 vCPU, 256MB–512MB RAM**).
+To eliminate hardware bias and methodology errors, all database engines were benchmarked under equivalent resource boundaries (**0.5 vCPU, 256MB–512MB RAM**).
 
 | Platform | Tier / Deployment | CPU Limit | RAM Limit | Protocol / Driver |
 |---|---|---|---|---|
@@ -86,11 +88,11 @@ To avoid methodology errors, all database platforms were constrained to equivale
 ## 3. Dataset Specification
 
 - **Dataset Source**: **SNAP soc-Pokec Social Network** (`soc-pokec-relationships.txt` from Stanford Network Analysis Platform).
-- **Graph Structure**: Slovakian Pokec Social Network (`:User` nodes connected by `:FOLLOWS` relationships).
+- **Graph Schema**: Pokec Social Network (`:User` nodes connected by `:FOLLOWS` relationships).
 - **Node Properties**: `id` (INT64, Primary Key), `username` (STRING), `age` (INT64), `category` (STRING), `created_at` (STRING).
 - **Relationship Properties**: `weight` (FLOAT), `interactions` (INT64).
 - **Scale**: **74,062 Unique Nodes** and **150,000 Relationships**.
-- **Distribution**: Real-world power-law social network degree distribution.
+- **Distribution**: Power-law social network degree distribution with high-degree hubs.
 
 ---
 
@@ -151,7 +153,7 @@ To avoid methodology errors, all database platforms were constrained to equivale
 ## 5. Technical Deep-Dive & Root-Cause Analysis
 
 ### Why CognoDB Cloud Outperforms Neo4j on Equal Resources
-1. **Zero Driver Overhead & Protocol Compatibility**: CognoDB Cloud leverages standard Cypher over Bolt (`bolt+s://`). However, its query compilation layer avoids Neo4j's heavy JVM garbage collection pauses under 256MB memory constraints.
+1. **Zero Driver Overhead & Protocol Compatibility**: CognoDB Cloud leverages standard Cypher over Bolt (`bolt+s://`). However, its query compilation layer avoids Neo4j's heavy JVM garbage collection pauses under low 256MB memory constraints.
 2. **Lightweight Index Pointer Hopping**: In 2-hop and 3-hop traversals, CognoDB maintains tighter node-to-edge adjacency list cache alignment, keeping latency low (p95 12.4ms vs Neo4j's 18.2ms).
 3. **Concurrency Scaling under CPU Bursts**: On 10–40 client concurrency sweeps, CognoDB scaled to **3,820 QPS**, outperforming Neo4j (2,650 QPS) due to lower lock contention during mixed read/write transactions.
 
@@ -217,8 +219,7 @@ Many free tiers throttle CPU or choke under low memory limits. To find out what 
 
 ---
 
-## 9. Submission Instructions
+## 9. Deliverable Summary & Security Policy
 
-- **Deliverables Submitted To:** hr@wexa.ai
-- **Email Subject:** `CognoDB Assignment 1 – Candidate Submission`
-- **Secrets Policy:** No passwords or URIs are hardcoded in source files; all credentials read from environment variables via `.env`.
+- **Repository**: Public GitHub Repository
+- **Secrets Policy**: No passwords, tokens, or private URIs are hardcoded in source files. All connection credentials are managed securely via environment variables in `.env`.
