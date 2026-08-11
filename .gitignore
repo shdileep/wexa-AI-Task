@@ -10,6 +10,7 @@ dataset/data/*
 !dataset/data/.gitkeep
 !dataset/data/nodes.csv
 !dataset/data/edges.csv
+!dataset/soc-pokec-relationships.csv
 kuzu_db_data/
 *.db
 *.parquet
