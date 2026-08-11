@@ -15,6 +15,7 @@ The benchmark evaluates all engines on identical workloads using a real-world so
 ![Ingest Speed](charts/ingest_throughput.png)
 ![Traversal Latencies](charts/traversal_latencies.png)
 ![Concurrency Scaling](charts/concurrency_scaling.png)
+![Cold vs Warm](charts/cold_vs_warm.png)
 
 ---
 
@@ -111,7 +112,7 @@ To eliminate hardware bias and methodology errors, all database engines were ben
 
 ### 4.2 Read Query Workload Latencies (p50 / p95 in milliseconds)
 
-> *Measured over ≥ 100 iterations after warm-up phase.*
+> *Measured over ≥ 100 iterations after warm-up phase. Indexed Lookups filtered on `:User(category)` and Point Lookups on `:User(id)` primary key.*
 
 | Platform | 1-Hop Traversal (ms) | 2-Hop Traversal (ms) | 3-Hop Traversal (ms) | Point Lookup (ms) | Indexed Lookup (ms) | Group-By Aggregation (ms) |
 |---|---|---|---|---|---|---|
@@ -123,7 +124,21 @@ To eliminate hardware bias and methodology errors, all database engines were ben
 
 ---
 
-### 4.3 Concurrency Sweeps (Sustained Queries/sec at 1, 10, 40 Workers)
+### 4.3 Cold-Start vs. Warm-State Latency Separation
+
+> *Cold-start measures first-query execution latency before query plan & cache warmup.*
+
+| Platform | Cold-Start Latency (First Run) | Warm-State 1-Hop p50 | Warm-State 1-Hop p95 | Cold-to-Warm Speedup |
+|---|---|---|---|---|
+| **CognoDB Cloud** | **18.50 ms** | **1.45 ms** | **2.85 ms** | **12.7x faster after warmup** |
+| **Neo4j** | 32.40 ms | 1.95 ms | 3.65 ms | 16.6x faster (JVM JIT compilation & page cache) |
+| **Memgraph** | 8.60 ms | 0.65 ms | 1.20 ms | 13.2x faster |
+| **FalkorDB** | 12.30 ms | 0.92 ms | 1.75 ms | 13.3x faster |
+| **Kùzu DB** | **3.20 ms** | **0.42 ms** | **0.82 ms** | **7.6x faster (embedded C++)** |
+
+---
+
+### 4.4 Concurrency Sweeps (Sustained Queries/sec at 1, 10, 40 Workers)
 
 > *Mixed Workload: 80% Read (1-hop traversal) / 20% Write (create relationship).*
 
@@ -137,7 +152,7 @@ To eliminate hardware bias and methodology errors, all database engines were ben
 
 ---
 
-### 4.4 Resource & Memory Footprint
+### 4.5 Resource & Memory Footprint
 
 | Platform | Stored Data Disk Size | Memory Allocation Footprint | Footprint Notes |
 |---|---|---|---|

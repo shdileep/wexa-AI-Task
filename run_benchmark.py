@@ -62,6 +62,7 @@ def get_mock_results() -> Dict[str, Any]:
             "specs": "Burstable 0.5 vCPU, 256 MB RAM, 1 GB Disk (c0 Free)",
             "ingest": {"total_nodes": 74062, "total_edges": 150000, "nodes_per_sec": 4250.0, "edges_per_sec": 3120.0, "total_wall_clock_sec": 53.9},
             "read": {
+                "cold_start_ms": 18.50,
                 "1hop_traversal": {"p50": 1.45, "p95": 2.85, "mean": 1.62},
                 "2hop_traversal": {"p50": 6.80, "p95": 12.40, "mean": 7.30},
                 "3hop_traversal": {"p50": 24.10, "p95": 48.60, "mean": 27.50},
@@ -80,6 +81,7 @@ def get_mock_results() -> Dict[str, Any]:
             "specs": "0.5 vCPU, 512 MB RAM (Container Capped)",
             "ingest": {"total_nodes": 25000, "total_edges": 150000, "nodes_per_sec": 3890.0, "edges_per_sec": 2640.0, "total_wall_clock_sec": 63.2},
             "read": {
+                "cold_start_ms": 32.40,
                 "1hop_traversal": {"p50": 1.95, "p95": 3.65, "mean": 2.10},
                 "2hop_traversal": {"p50": 9.40, "p95": 18.20, "mean": 10.20},
                 "3hop_traversal": {"p50": 36.50, "p95": 74.20, "mean": 41.00},
@@ -98,6 +100,7 @@ def get_mock_results() -> Dict[str, Any]:
             "specs": "0.5 vCPU, 512 MB RAM (In-Memory C++)",
             "ingest": {"total_nodes": 25000, "total_edges": 150000, "nodes_per_sec": 8900.0, "edges_per_sec": 6800.0, "total_wall_clock_sec": 24.8},
             "read": {
+                "cold_start_ms": 8.60,
                 "1hop_traversal": {"p50": 0.65, "p95": 1.20, "mean": 0.72},
                 "2hop_traversal": {"p50": 2.80, "p95": 5.40, "mean": 3.10},
                 "3hop_traversal": {"p50": 11.20, "p95": 21.50, "mean": 12.80},
@@ -116,6 +119,7 @@ def get_mock_results() -> Dict[str, Any]:
             "specs": "0.5 vCPU, 512 MB RAM (Redis Graph Module)",
             "ingest": {"total_nodes": 25000, "total_edges": 150000, "nodes_per_sec": 6400.0, "edges_per_sec": 4900.0, "total_wall_clock_sec": 34.5},
             "read": {
+                "cold_start_ms": 12.30,
                 "1hop_traversal": {"p50": 0.92, "p95": 1.75, "mean": 1.05},
                 "2hop_traversal": {"p50": 4.10, "p95": 8.20, "mean": 4.60},
                 "3hop_traversal": {"p50": 16.80, "p95": 32.40, "mean": 18.90},
@@ -134,6 +138,7 @@ def get_mock_results() -> Dict[str, Any]:
             "specs": "0.5 vCPU, 512 MB RAM (Embedded Columnar C++)",
             "ingest": {"total_nodes": 25000, "total_edges": 150000, "nodes_per_sec": 12500.0, "edges_per_sec": 10400.0, "total_wall_clock_sec": 16.4},
             "read": {
+                "cold_start_ms": 3.20,
                 "1hop_traversal": {"p50": 0.42, "p95": 0.82, "mean": 0.46},
                 "2hop_traversal": {"p50": 1.95, "p95": 3.80, "mean": 2.15},
                 "3hop_traversal": {"p50": 7.80, "p95": 14.20, "mean": 8.60},
@@ -173,6 +178,7 @@ def print_summary_tables(all_results: Dict[str, Any]):
 
     # 2. Read Traversal Latencies Table (p50 / p95 ms)
     read_table = []
+    cold_table = []
     for p, res in all_results.items():
         r = res["read"]
         read_table.append([
@@ -184,10 +190,19 @@ def print_summary_tables(all_results: Dict[str, Any]):
             f"{r['indexed_lookup']['p50']} / {r['indexed_lookup']['p95']}",
             f"{r['aggregations']['p50']} / {r['aggregations']['p95']}"
         ])
+        cold_table.append([
+            p,
+            f"{r.get('cold_start_ms', 'N/A')} ms",
+            f"{r['1hop_traversal']['p50']} ms",
+            f"{r['1hop_traversal']['p95']} ms"
+        ])
     print("\n--- 2. READ WORKLOAD QUERY LATENCIES (p50 / p95 ms) ---")
     print(tabulate(read_table, headers=["Platform", "1-Hop Latency", "2-Hop Latency", "3-Hop Latency", "Point Lookup", "Indexed Lookup", "Group-By Aggregation"], tablefmt="github"))
 
-    # 3. Concurrency Sweeps (QPS)
+    print("\n--- 3. COLD-START VS WARM-STATE LATENCY SEPARATION ---")
+    print(tabulate(cold_table, headers=["Platform", "Cold-Start Latency (First Run)", "Warm-State p50", "Warm-State p95"], tablefmt="github"))
+
+    # 4. Concurrency Sweeps (QPS)
     conc_table = []
     for p, res in all_results.items():
         c = res["concurrency"]
@@ -197,7 +212,7 @@ def print_summary_tables(all_results: Dict[str, Any]):
             f"{c[10]['sustained_qps']:,.0f} (p95: {c[10]['p95']}ms)",
             f"{c[40]['sustained_qps']:,.0f} (p95: {c[40]['p95']}ms)"
         ])
-    print("\n--- 3. CONCURRENCY SWEEPS (SUSTAINED QPS AT 1, 10, 40 CLIENTS) ---")
+    print("\n--- 4. CONCURRENCY SWEEPS (SUSTAINED QPS AT 1, 10, 40 CLIENTS) ---")
     print(tabulate(conc_table, headers=["Platform", "1 Client Worker", "10 Client Workers", "40 Client Workers"], tablefmt="github"))
 
 def main():

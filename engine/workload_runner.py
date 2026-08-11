@@ -26,6 +26,10 @@ class BenchmarkRunner:
 
         categories = ["Tech", "Science", "Arts", "Finance", "Gaming", "Education", "Healthcare"]
 
+        # 0. Cold-Start Measurement (First execution latency before warm-up cache)
+        cold_id = random.randint(1, self.num_nodes)
+        _, cold_start_lat = self.adapter.run_query(QueryWorkloads.get_1hop_traversal(cold_id))
+
         # 1. Warm-Up Phase
         print(f"  Warm-up phase ({self.warmup_iterations} iterations)...")
         for _ in range(self.warmup_iterations):
@@ -88,6 +92,7 @@ class BenchmarkRunner:
 
         results = {
             "platform": self.adapter.name,
+            "cold_start_ms": round(cold_start_lat, 2),
             "1hop_traversal": MetricsCalculator.calculate_latencies(l_1hop),
             "2hop_traversal": MetricsCalculator.calculate_latencies(l_2hop),
             "3hop_traversal": MetricsCalculator.calculate_latencies(l_3hop),

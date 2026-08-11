@@ -87,8 +87,25 @@ def generate_benchmark_charts(results_dict: dict, output_dir: str = "./charts"):
     ax.set_xticks([1, 10, 40])
     ax.legend()
 
+    # 4. Cold vs Warm Latency Comparison Chart
+    fig, ax = plt.subplots(figsize=(10, 6))
+    cold_lats = [results_dict[p]["read"].get("cold_start_ms", 15.0) for p in platforms]
+    warm_lats = [results_dict[p]["read"]["1hop_traversal"]["p50"] for p in platforms]
+
+    x = np.arange(len(platforms))
+    width = 0.35
+
+    rects1 = ax.bar(x - width/2, cold_lats, width, label='Cold-Start Latency (First Run)', color='#e74c3c')
+    rects2 = ax.bar(x + width/2, warm_lats, width, label='Warm-State p50 Latency', color='#2ecc71')
+
+    ax.set_ylabel("Latency (ms) - Lower is better")
+    ax.set_title("Cold-Start Execution vs Warm-State Query Latency")
+    ax.set_xticks(x)
+    ax.set_xticklabels(platforms)
+    ax.legend()
+
     plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, "concurrency_scaling.png"), dpi=300)
+    plt.savefig(os.path.join(output_dir, "cold_vs_warm.png"), dpi=300)
     plt.close()
 
     print(f"[Chart Generator] Successfully saved visual charts to {output_dir}/")
