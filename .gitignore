@@ -8,9 +8,10 @@ soc-pokec-relationships.txt
 # Data and dynamic artifacts
 dataset/data/*
 !dataset/data/.gitkeep
+!dataset/data/nodes.csv
+!dataset/data/edges.csv
 kuzu_db_data/
 *.db
-*.csv
 *.parquet
 
 # Python cache & virtualenv
