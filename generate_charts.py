@@ -77,8 +77,8 @@ def generate_benchmark_charts(results_dict: dict, output_dir: str = "./charts"):
     fig, ax = plt.subplots(figsize=(10, 6))
     for idx, p in enumerate(platforms):
         concurrency_data = results_dict[p]["concurrency"]
-        clients = sorted(concurrency_data.keys())
-        qps_values = [concurrency_data[c]["sustained_qps"] for c in clients]
+        clients = sorted([int(c) for c in concurrency_data.keys()])
+        qps_values = [concurrency_data.get(c, concurrency_data.get(str(c), {})).get("sustained_qps", 0) for c in clients]
         ax.plot(clients, qps_values, marker='o', linewidth=2.5, label=p, color=PALETTE[idx % len(PALETTE)])
 
     ax.set_xlabel("Concurrent Client Workers")
@@ -86,6 +86,10 @@ def generate_benchmark_charts(results_dict: dict, output_dir: str = "./charts"):
     ax.set_title("Concurrency Scaling (1 / 10 / 40 Clients - Mixed 80/20 Read/Write)")
     ax.set_xticks([1, 10, 40])
     ax.legend()
+
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, "concurrency_scaling.png"), dpi=300)
+    plt.close()
 
     # 4. Cold vs Warm Latency Comparison Chart
     fig, ax = plt.subplots(figsize=(10, 6))

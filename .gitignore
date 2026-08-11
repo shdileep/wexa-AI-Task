@@ -11,9 +11,11 @@ dataset/data/*
 !dataset/data/nodes.csv
 !dataset/data/edges.csv
 !dataset/soc-pokec-relationships.csv
-kuzu_db_data/
+kuzu_db_data*
+scratch_kuzu*
 *.db
 *.parquet
+*.wal
 
 # Python cache & virtualenv
 __pycache__/
@@ -24,10 +26,13 @@ env/
 .venv/
 
 # Results & temporary benchmark logs
-results/*.json
+results/*
 !results/.gitkeep
-charts/*.png
+!results/benchmark_summary.json
+!results/README.md
+charts/*
 !charts/.gitkeep
+!charts/*.png
 
 # IDE / System
 .vscode/

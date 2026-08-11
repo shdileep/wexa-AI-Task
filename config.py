@@ -36,13 +36,14 @@ class BenchmarkConfig:
     charts_dir: str = "./charts"
 
     # Platform configurations
+    # Note: Default URIs are placeholders. Real connection credentials must come from .env
     cognodb: PlatformConfig = field(default_factory=lambda: PlatformConfig(
         name="CognoDB Cloud",
         driver_type="bolt_cognodb",
-        uri=os.getenv("COGNODB_URI", "bolt+s://db-0040bc7a.databases.cognodb.com"),
+        uri=os.getenv("COGNODB_URI", "bolt+s://db-0040bc7a.databases.cognodb.cloud"),
         user=os.getenv("COGNODB_USER", "cognodb"),
         password=os.getenv("COGNODB_PASSWORD", "secret"),
-        advertised_specs="Burstable 0.5 vCPU, 512 MB RAM, 1 GB Storage"
+        advertised_specs="Burstable 0.5 vCPU, 256 MB RAM, 1 GB Storage"
     ))
 
     neo4j: PlatformConfig = field(default_factory=lambda: PlatformConfig(

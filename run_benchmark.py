@@ -43,6 +43,15 @@ from engine.ingest import IngestEngine
 from engine.workload_runner import BenchmarkRunner
 from generate_charts import generate_benchmark_charts
 
+MOCK_BANNER = """
+===================================================================================
+!!!                                   WARNING                                   !!!
+!!!         THIS BENCHMARK IS RUNNING IN MOCK / SIMULATED DATA MODE             !!!
+!!!         RESULTS ARE SIMULATED BASELINES FOR DEMO & TESTING PURPOSES         !!!
+!!!         DO NOT PUBLISH OR REPORT THESE AS LIVE EMPIRICAL MEASUREMENTS       !!!
+===================================================================================
+"""
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Graph Database Cloud Benchmarking Suite")
     parser.add_argument("--cognodb-uri", type=str, default=None, help="CognoDB Cloud Bolt URI")
@@ -53,13 +62,14 @@ def parse_args():
     parser.add_argument("--iterations", type=int, default=100, help="Iterations per read query workload")
     parser.add_argument("--quick-run", action="store_true", help="Run shortened iteration benchmark for fast evaluation")
     parser.add_argument("--mock-run", action="store_true", help="Generate simulated benchmark dataset & charts for baseline evaluation")
+    parser.add_argument("--allow-mock-fallback", action="store_true", help="Allow fallback to simulated mock results if live database instances cannot be reached")
     return parser.parse_args()
 
 def get_mock_results() -> Dict[str, Any]:
     """Generates realistic empirical baseline benchmark results for evaluation & visualization rendering."""
-    return {
+    mock_data = {
         "CognoDB Cloud": {
-            "specs": "Burstable 0.5 vCPU, 256 MB RAM, 1 GB Disk (c0 Free)",
+            "specs": "Burstable 0.5 vCPU, 256 MB RAM, 1 GB Storage (c0 Free)",
             "ingest": {"total_nodes": 74062, "total_edges": 150000, "nodes_per_sec": 4250.0, "edges_per_sec": 3120.0, "total_wall_clock_sec": 53.9},
             "read": {
                 "cold_start_ms": 18.50,
@@ -79,7 +89,7 @@ def get_mock_results() -> Dict[str, Any]:
         },
         "Neo4j": {
             "specs": "0.5 vCPU, 512 MB RAM (Container Capped)",
-            "ingest": {"total_nodes": 25000, "total_edges": 150000, "nodes_per_sec": 3890.0, "edges_per_sec": 2640.0, "total_wall_clock_sec": 63.2},
+            "ingest": {"total_nodes": 74062, "total_edges": 150000, "nodes_per_sec": 3890.0, "edges_per_sec": 2640.0, "total_wall_clock_sec": 63.2},
             "read": {
                 "cold_start_ms": 32.40,
                 "1hop_traversal": {"p50": 1.95, "p95": 3.65, "mean": 2.10},
@@ -98,7 +108,7 @@ def get_mock_results() -> Dict[str, Any]:
         },
         "Memgraph": {
             "specs": "0.5 vCPU, 512 MB RAM (In-Memory C++)",
-            "ingest": {"total_nodes": 25000, "total_edges": 150000, "nodes_per_sec": 8900.0, "edges_per_sec": 6800.0, "total_wall_clock_sec": 24.8},
+            "ingest": {"total_nodes": 74062, "total_edges": 150000, "nodes_per_sec": 8900.0, "edges_per_sec": 6800.0, "total_wall_clock_sec": 24.8},
             "read": {
                 "cold_start_ms": 8.60,
                 "1hop_traversal": {"p50": 0.65, "p95": 1.20, "mean": 0.72},
@@ -117,7 +127,7 @@ def get_mock_results() -> Dict[str, Any]:
         },
         "FalkorDB": {
             "specs": "0.5 vCPU, 512 MB RAM (Redis Graph Module)",
-            "ingest": {"total_nodes": 25000, "total_edges": 150000, "nodes_per_sec": 6400.0, "edges_per_sec": 4900.0, "total_wall_clock_sec": 34.5},
+            "ingest": {"total_nodes": 74062, "total_edges": 150000, "nodes_per_sec": 6400.0, "edges_per_sec": 4900.0, "total_wall_clock_sec": 34.5},
             "read": {
                 "cold_start_ms": 12.30,
                 "1hop_traversal": {"p50": 0.92, "p95": 1.75, "mean": 1.05},
@@ -135,8 +145,8 @@ def get_mock_results() -> Dict[str, Any]:
             "footprint": {"stored_size_mb": "In-Memory Redis", "memory_usage_mb": "142 MB Redis RAM"}
         },
         "Kùzu DB": {
-            "specs": "0.5 vCPU, 512 MB RAM (Embedded Columnar C++)",
-            "ingest": {"total_nodes": 25000, "total_edges": 150000, "nodes_per_sec": 12500.0, "edges_per_sec": 10400.0, "total_wall_clock_sec": 16.4},
+            "specs": "0.5 vCPU, 256 MB Buffer Pool (Embedded Columnar C++)",
+            "ingest": {"total_nodes": 74062, "total_edges": 150000, "nodes_per_sec": 12500.0, "edges_per_sec": 10400.0, "total_wall_clock_sec": 16.4},
             "read": {
                 "cold_start_ms": 3.20,
                 "1hop_traversal": {"p50": 0.42, "p95": 0.82, "mean": 0.46},
@@ -154,8 +164,15 @@ def get_mock_results() -> Dict[str, Any]:
             "footprint": {"stored_size_mb": "16.2 MB Columnar", "memory_usage_mb": "256 MB Buffer Pool"}
         }
     }
+    for p in mock_data:
+        mock_data[p]["data_source"] = "MOCK_SIMULATED"
+    return mock_data
 
 def print_summary_tables(all_results: Dict[str, Any]):
+    is_mock = any(res.get("data_source") == "MOCK_SIMULATED" for res in all_results.values())
+    if is_mock:
+        print(MOCK_BANNER)
+
     print("\n" + "=" * 90)
     print("                      BENCHMARK RESULTS MATRIX SUMMARY")
     print("=" * 90)
@@ -166,6 +183,7 @@ def print_summary_tables(all_results: Dict[str, Any]):
         ing = res["ingest"]
         ingest_table.append([
             p,
+            res.get("data_source", "UNKNOWN"),
             res["specs"],
             f"{ing['total_nodes']:,}",
             f"{ing['total_edges']:,}",
@@ -174,7 +192,7 @@ def print_summary_tables(all_results: Dict[str, Any]):
             f"{ing['total_wall_clock_sec']:.1f}s"
         ])
     print("\n--- 1. DATA INGESTION THROUGHPUT ---")
-    print(tabulate(ingest_table, headers=["Platform", "Specs / Tier", "Nodes", "Relationships", "Nodes/sec", "Rels/sec", "Total Load Time"], tablefmt="github"))
+    print(tabulate(ingest_table, headers=["Platform", "Data Source", "Specs / Tier", "Nodes", "Relationships", "Nodes/sec", "Rels/sec", "Total Load Time"], tablefmt="github"))
 
     # 2. Read Traversal Latencies Table (p50 / p95 ms)
     read_table = []
@@ -206,11 +224,15 @@ def print_summary_tables(all_results: Dict[str, Any]):
     conc_table = []
     for p, res in all_results.items():
         c = res["concurrency"]
+        # Keys in JSON might be ints or strings when reloaded
+        c1 = c.get(1) or c.get("1", {})
+        c10 = c.get(10) or c.get("10", {})
+        c40 = c.get(40) or c.get("40", {})
         conc_table.append([
             p,
-            f"{c[1]['sustained_qps']:,.0f} (p95: {c[1]['p95']}ms)",
-            f"{c[10]['sustained_qps']:,.0f} (p95: {c[10]['p95']}ms)",
-            f"{c[40]['sustained_qps']:,.0f} (p95: {c[40]['p95']}ms)"
+            f"{c1.get('sustained_qps', 0):,.0f} (p95: {c1.get('p95', 0)}ms)",
+            f"{c10.get('sustained_qps', 0):,.0f} (p95: {c10.get('p95', 0)}ms)",
+            f"{c40.get('sustained_qps', 0):,.0f} (p95: {c40.get('p95', 0)}ms)"
         ])
     print("\n--- 4. CONCURRENCY SWEEPS (SUSTAINED QPS AT 1, 10, 40 CLIENTS) ---")
     print(tabulate(conc_table, headers=["Platform", "1 Client Worker", "10 Client Workers", "40 Client Workers"], tablefmt="github"))
@@ -231,7 +253,7 @@ def main():
     print("==============================================================================")
 
     if args.mock_run:
-        print("[Notice] Running in mock/simulation mode to format results matrix & render charts.")
+        print(MOCK_BANNER)
         all_results = get_mock_results()
     else:
         # 1. Dataset Generation / Check
@@ -250,10 +272,21 @@ def main():
         ]
 
         all_results = {}
+        connection_reports = {}
 
         for adapter in adapters:
             print(f"\n---> Benchmarking Platform: {adapter.name}")
-            connected = adapter.connect()
+            try:
+                connected = adapter.connect()
+            except Exception as conn_err:
+                connected = False
+                connection_reports[adapter.name] = f"Exception: {conn_err}"
+            else:
+                if connected:
+                    connection_reports[adapter.name] = "SUCCESS"
+                else:
+                    connection_reports[adapter.name] = "Connection failed / Unreachable"
+
             if not connected:
                 print(f"  [Skipped] {adapter.name} is not reachable. Ensure instance or container is running.")
                 continue
@@ -264,7 +297,7 @@ def main():
                 ingest_metrics = ingest_engine.run_ingest(nodes_csv, edges_csv)
 
                 # B. Read Workload Benchmark
-                runner = BenchmarkRunner(adapter=adapter, iterations=iterations, warmup_iterations=config.warmup_iterations, num_nodes=args.nodes)
+                runner = BenchmarkRunner(adapter=adapter, iterations=iterations, warmup_iterations=config.warmup_iterations, num_nodes=stats.get("node_count", args.nodes))
                 read_metrics = runner.run_read_workloads()
 
                 # C. Concurrency Sweeps
@@ -274,6 +307,7 @@ def main():
                 footprint_metrics = adapter.get_storage_footprint()
 
                 all_results[adapter.name] = {
+                    "data_source": "LIVE_MEASURED",
                     "specs": adapter.advertised_specs,
                     "ingest": ingest_metrics,
                     "read": read_metrics,
@@ -284,10 +318,29 @@ def main():
             finally:
                 adapter.close()
 
-    # If no connected adapters succeeded, fallback to mock results for evaluation output
-    if not all_results:
-        print("\n[Notice] No live external instances detected. Displaying baseline reference results...")
-        all_results = get_mock_results()
+        # Detailed connection reporting
+        print("\n" + "=" * 90)
+        print("                       LIVE ADAPTER CONNECTION REPORT")
+        print("=" * 90)
+        for name, status in connection_reports.items():
+            print(f"  - {name:20s}: {status}")
+
+    # Explicit handling when no live instances succeeded
+    if not all_results and not args.mock_run:
+        print("\n[CRITICAL ERROR] No live graph database instances could be reached.")
+        print("Connection failure breakdown:")
+        for name, status in connection_reports.items():
+            print(f"  * {name}: {status}")
+        
+        if args.allow_mock_fallback:
+            print("\n[Notice] '--allow-mock-fallback' flag is active. Falling back to simulated mock dataset.")
+            print(MOCK_BANNER)
+            all_results = get_mock_results()
+        else:
+            print("\n[ERROR] Silent fallback to mock data is disabled by default.")
+            print("To reproduce real results, start required database services/containers.")
+            print("To explicitly allow simulated fallback, re-run with '--allow-mock-fallback' or '--mock-run'.")
+            sys.exit(1)
 
     # Save summary JSON
     os.makedirs(config.output_dir, exist_ok=True)

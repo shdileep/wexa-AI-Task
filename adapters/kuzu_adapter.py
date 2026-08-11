@@ -29,7 +29,10 @@ class KuzuAdapter(BaseGraphAdapter):
             self.is_connected = False
             return False
         try:
-            os.makedirs(self.db_path, exist_ok=True)
+            parent_dir = os.path.dirname(os.path.abspath(self.db_path))
+            os.makedirs(parent_dir, exist_ok=True)
+            if os.path.exists(self.db_path) and os.path.isdir(self.db_path) and not os.listdir(self.db_path):
+                os.rmdir(self.db_path)
             # Kùzu database initialization
             self.db = kuzu.Database(self.db_path, buffer_pool_size=256 * 1024 * 1024) # 256MB buffer pool
             self.conn = kuzu.Connection(self.db)
@@ -47,14 +50,18 @@ class KuzuAdapter(BaseGraphAdapter):
         self.is_connected = False
 
     def clear_database(self) -> bool:
-        self.close()
+        if not self.conn:
+            if not self.connect():
+                return False
         try:
-            if os.path.exists(self.db_path):
-                shutil.rmtree(self.db_path)
-            return self.connect()
-        except Exception as e:
-            print(f"[{self.name}] Error clearing database directory: {e}")
-            return False
+            self.conn.execute("DROP TABLE FOLLOWS")
+        except Exception:
+            pass
+        try:
+            self.conn.execute("DROP TABLE User")
+        except Exception:
+            pass
+        return True
 
     def create_schema_and_indexes(self) -> bool:
         if not self.conn:
@@ -73,23 +80,49 @@ class KuzuAdapter(BaseGraphAdapter):
         if not self.conn or not nodes_batch:
             return 0
         
-        # Batch insert into Kuzu via query
-        for row in nodes_batch:
-            uid, uname, age, cat, created_at = row
-            uname_clean = uname.replace("'", "\\'")
-            cat_clean = cat.replace("'", "\\'")
-            query = f"CREATE (:User {{id: {uid}, username: '{uname_clean}', age: {age}, category: '{cat_clean}', created_at: '{created_at}'}})"
-            self.conn.execute(query)
+        batch = [
+            {
+                "id": row[0],
+                "username": row[1],
+                "age": row[2],
+                "category": row[3],
+                "created_at": row[4]
+            }
+            for row in nodes_batch
+        ]
+        query = """
+        UNWIND $batch AS row
+        CREATE (u:User {
+            id: row.id,
+            username: row.username,
+            age: row.age,
+            category: row.category,
+            created_at: row.created_at
+        })
+        """
+        self.conn.execute(query, {"batch": batch})
         return len(nodes_batch)
 
     def ingest_edges_batch(self, edges_batch: List[Tuple]) -> int:
         if not self.conn or not edges_batch:
             return 0
 
-        for row in edges_batch:
-            src, dst, weight, interactions = row
-            query = f"MATCH (src:User {{id: {src}}}), (dst:User {{id: {dst}}}) CREATE (src)-[:FOLLOWS {{weight: {weight}, interactions: {interactions}}}]->(dst)"
-            self.conn.execute(query)
+        batch = [
+            {
+                "src_id": row[0],
+                "dst_id": row[1],
+                "weight": row[2],
+                "interactions": row[3]
+            }
+            for row in edges_batch
+        ]
+        query = """
+        UNWIND $batch AS row
+        MATCH (src:User {id: row.src_id})
+        MATCH (dst:User {id: row.dst_id})
+        CREATE (src)-[:FOLLOWS {weight: row.weight, interactions: row.interactions}]->(dst)
+        """
+        self.conn.execute(query, {"batch": batch})
         return len(edges_batch)
 
     def run_query(self, query: str, params: Optional[Dict[str, Any]] = None) -> Tuple[List[Any], float]:

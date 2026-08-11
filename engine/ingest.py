@@ -18,6 +18,12 @@ class IngestEngine:
     def run_ingest(self, nodes_csv_path: str, edges_csv_path: str) -> Dict[str, Any]:
         print(f"[{self.adapter.name}] Starting data ingestion from CSV datasets...")
         
+        # Determine expected counts from source CSV files for dataset parity assertion
+        with open(nodes_csv_path, mode="r", encoding="utf-8") as f:
+            expected_nodes = max(0, sum(1 for _ in f) - 1)
+        with open(edges_csv_path, mode="r", encoding="utf-8") as f:
+            expected_edges = max(0, sum(1 for _ in f) - 1)
+
         # 1. Reset database & create schema
         self.adapter.clear_database()
         self.adapter.create_schema_and_indexes()
@@ -65,6 +71,16 @@ class IngestEngine:
         edges_per_sec = MetricsCalculator.calculate_throughput(total_edges, edges_duration)
 
         total_wall_clock_time = nodes_duration + edges_duration
+
+        # Dataset parity assertion
+        if total_nodes != expected_nodes:
+            raise ValueError(
+                f"[{self.adapter.name}] Dataset Parity Failure: Ingested {total_nodes} nodes, expected {expected_nodes} from {nodes_csv_path}"
+            )
+        if total_edges != expected_edges:
+            raise ValueError(
+                f"[{self.adapter.name}] Dataset Parity Failure: Ingested {total_edges} edges, expected {expected_edges} from {edges_csv_path}"
+            )
 
         results = {
             "platform": self.adapter.name,

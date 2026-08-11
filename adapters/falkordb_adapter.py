@@ -74,32 +74,49 @@ class FalkorDBAdapter(BaseGraphAdapter):
         if not self.graph or not nodes_batch:
             return 0
         
-        # FalkorDB / RedisGraph Cypher query string batching
-        statements = []
-        for row in nodes_batch:
-            uid, uname, age, cat, created_at = row
-            # Escape strings safely
-            uname_clean = uname.replace("'", "\\'")
-            cat_clean = cat.replace("'", "\\'")
-            stmt = f"CREATE (:User {{id: {uid}, username: '{uname_clean}', age: {age}, category: '{cat_clean}', created_at: '{created_at}'}})"
-            statements.append(stmt)
-        
-        full_cypher = " ".join(statements)
-        self.graph.query(full_cypher)
+        batch = [
+            {
+                "id": row[0],
+                "username": row[1],
+                "age": row[2],
+                "category": row[3],
+                "created_at": row[4]
+            }
+            for row in nodes_batch
+        ]
+        query = """
+        UNWIND $batch AS row
+        CREATE (u:User {
+            id: row.id,
+            username: row.username,
+            age: row.age,
+            category: row.category,
+            created_at: row.created_at
+        })
+        """
+        self.graph.query(query, {"batch": batch})
         return len(nodes_batch)
 
     def ingest_edges_batch(self, edges_batch: List[Tuple]) -> int:
         if not self.graph or not edges_batch:
             return 0
 
-        statements = []
-        for row in edges_batch:
-            src, dst, weight, interactions = row
-            stmt = f"MATCH (src:User {{id: {src}}}), (dst:User {{id: {dst}}}) CREATE (src)-[:FOLLOWS {{weight: {weight}, interactions: {interactions}}}]->(dst)"
-            statements.append(stmt)
-
-        full_cypher = " ".join(statements)
-        self.graph.query(full_cypher)
+        batch = [
+            {
+                "src_id": row[0],
+                "dst_id": row[1],
+                "weight": row[2],
+                "interactions": row[3]
+            }
+            for row in edges_batch
+        ]
+        query = """
+        UNWIND $batch AS row
+        MATCH (src:User {id: row.src_id})
+        MATCH (dst:User {id: row.dst_id})
+        CREATE (src)-[:FOLLOWS {weight: row.weight, interactions: row.interactions}]->(dst)
+        """
+        self.graph.query(query, {"batch": batch})
         return len(edges_batch)
 
     def run_query(self, query: str, params: Optional[Dict[str, Any]] = None) -> Tuple[List[Any], float]:
