@@ -29,9 +29,14 @@ def generate_benchmark_charts(results_dict: dict, output_dir: str = "./charts"):
         return
     os.makedirs(output_dir, exist_ok=True)
     platforms = list(results_dict.keys())
+    
+    # Check if results are mock simulated
+    is_mock = any(results_dict[p].get("data_source") == "MOCK_SIMULATED" for p in platforms)
+    watermark_text = "Data Source: MOCK_SIMULATED (Simulated Baseline)" if is_mock else "Data Source: LIVE_MEASURED (Live Production)"
+    watermark_color = "#c0392b" if is_mock else "#27ae60"
 
     # 1. Ingest Throughput Chart
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(10, 6.5))
     edges_per_sec = [results_dict[p]["ingest"]["edges_per_sec"] for p in platforms]
     
     bars = ax.bar(platforms, edges_per_sec, color=PALETTE[:len(platforms)], width=0.55)
@@ -46,12 +51,14 @@ def generate_benchmark_charts(results_dict: dict, output_dir: str = "./charts"):
                     textcoords="offset points",
                     ha='center', va='bottom', fontweight='bold')
 
-    plt.tight_layout()
+    fig.text(0.5, 0.02, watermark_text, ha='center', fontsize=11, color=watermark_color, fontweight='bold',
+             bbox=dict(boxstyle="round,pad=0.3", fc="#f8f9fa", ec=watermark_color, lw=1.5))
+    plt.tight_layout(rect=[0, 0.05, 1, 1])
     plt.savefig(os.path.join(output_dir, "ingest_throughput.png"), dpi=300)
     plt.close()
 
     # 2. Traversal Latency Chart (1-hop, 2-hop, 3-hop p95)
-    fig, ax = plt.subplots(figsize=(12, 6))
+    fig, ax = plt.subplots(figsize=(12, 6.5))
     x = np.arange(len(platforms))
     width = 0.25
 
@@ -69,12 +76,14 @@ def generate_benchmark_charts(results_dict: dict, output_dir: str = "./charts"):
     ax.set_xticklabels(platforms)
     ax.legend()
 
-    plt.tight_layout()
+    fig.text(0.5, 0.02, watermark_text, ha='center', fontsize=11, color=watermark_color, fontweight='bold',
+             bbox=dict(boxstyle="round,pad=0.3", fc="#f8f9fa", ec=watermark_color, lw=1.5))
+    plt.tight_layout(rect=[0, 0.05, 1, 1])
     plt.savefig(os.path.join(output_dir, "traversal_latencies.png"), dpi=300)
     plt.close()
 
     # 3. Concurrency Scaling Chart
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(10, 6.5))
     for idx, p in enumerate(platforms):
         concurrency_data = results_dict[p]["concurrency"]
         clients = sorted([int(c) for c in concurrency_data.keys()])
@@ -87,12 +96,14 @@ def generate_benchmark_charts(results_dict: dict, output_dir: str = "./charts"):
     ax.set_xticks([1, 10, 40])
     ax.legend()
 
-    plt.tight_layout()
+    fig.text(0.5, 0.02, watermark_text, ha='center', fontsize=11, color=watermark_color, fontweight='bold',
+             bbox=dict(boxstyle="round,pad=0.3", fc="#f8f9fa", ec=watermark_color, lw=1.5))
+    plt.tight_layout(rect=[0, 0.05, 1, 1])
     plt.savefig(os.path.join(output_dir, "concurrency_scaling.png"), dpi=300)
     plt.close()
 
     # 4. Cold vs Warm Latency Comparison Chart
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(10, 6.5))
     cold_lats = [results_dict[p]["read"].get("cold_start_ms", 15.0) for p in platforms]
     warm_lats = [results_dict[p]["read"]["1hop_traversal"]["p50"] for p in platforms]
 
@@ -108,7 +119,9 @@ def generate_benchmark_charts(results_dict: dict, output_dir: str = "./charts"):
     ax.set_xticklabels(platforms)
     ax.legend()
 
-    plt.tight_layout()
+    fig.text(0.5, 0.02, watermark_text, ha='center', fontsize=11, color=watermark_color, fontweight='bold',
+             bbox=dict(boxstyle="round,pad=0.3", fc="#f8f9fa", ec=watermark_color, lw=1.5))
+    plt.tight_layout(rect=[0, 0.05, 1, 1])
     plt.savefig(os.path.join(output_dir, "cold_vs_warm.png"), dpi=300)
     plt.close()
 
