@@ -1,7 +1,6 @@
 # Graph Database Cloud Benchmarking Suite
 ### Benchmarking CognoDB Cloud against Neo4j, Memgraph, FalkorDB & Kùzu DB
 
-> **Wexa AI — Take-Home Assignment Deliverable**  
 > **Topic:** Reproducible Graph Database Cloud Benchmark Suite & Technical Analysis  
 > **Target Cloud Platform:** CognoDB Cloud (Free `c0` Tier)  
 

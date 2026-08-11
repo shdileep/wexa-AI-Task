@@ -44,7 +44,7 @@ from engine.workload_runner import BenchmarkRunner
 from generate_charts import generate_benchmark_charts
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Graph Database Cloud Benchmarking Suite (Wexa AI Assignment)")
+    parser = argparse.ArgumentParser(description="Graph Database Cloud Benchmarking Suite")
     parser.add_argument("--cognodb-uri", type=str, default=None, help="CognoDB Cloud Bolt URI")
     parser.add_argument("--cognodb-user", type=str, default="cognodb", help="CognoDB Cloud User")
     parser.add_argument("--cognodb-pass", type=str, default=None, help="CognoDB Cloud Password")
@@ -212,7 +212,7 @@ def main():
     iterations = 20 if args.quick_run else args.iterations
 
     print("==============================================================================")
-    print("     GRAPH DATABASE CLOUD BENCHMARKING SUITE (WEXA AI ASSIGNMENT)")
+    print("     GRAPH DATABASE CLOUD BENCHMARKING SUITE")
     print("==============================================================================")
 
     if args.mock_run:
