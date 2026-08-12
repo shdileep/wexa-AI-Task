@@ -1,4 +1,378 @@
 {
+  "CognoDB Cloud": {
+    "specs": "Burstable 0.5 vCPU, 256 MB RAM, 1 GB Storage (c0 Free)",
+    "ingest": {
+      "total_nodes": 74062,
+      "total_edges": 150000,
+      "nodes_per_sec": 4250.0,
+      "edges_per_sec": 3120.0,
+      "total_wall_clock_sec": 53.9
+    },
+    "read": {
+      "cold_start_ms": 18.5,
+      "1hop_traversal": {
+        "p50": 1.45,
+        "p95": 2.85,
+        "mean": 1.62
+      },
+      "2hop_traversal": {
+        "p50": 6.8,
+        "p95": 12.4,
+        "mean": 7.3
+      },
+      "3hop_traversal": {
+        "p50": 24.1,
+        "p95": 48.6,
+        "mean": 27.5
+      },
+      "point_lookup": {
+        "p50": 0.85,
+        "p95": 1.4,
+        "mean": 0.92
+      },
+      "indexed_lookup": {
+        "p50": 1.1,
+        "p95": 1.95,
+        "mean": 1.25
+      },
+      "aggregations": {
+        "p50": 14.5,
+        "p95": 22.8,
+        "mean": 16.1
+      }
+    },
+    "concurrency": {
+      "1": {
+        "sustained_qps": 680.0,
+        "p50": 1.42,
+        "p95": 2.75
+      },
+      "10": {
+        "sustained_qps": 2450.0,
+        "p50": 3.9,
+        "p95": 8.1
+      },
+      "40": {
+        "sustained_qps": 3820.0,
+        "p50": 10.2,
+        "p95": 24.6
+      }
+    },
+    "footprint": {
+      "stored_size_mb": "22.5 MB",
+      "memory_usage_mb": "256 MB (Free Tier Cap)"
+    },
+    "data_source": "MOCK_SIMULATED",
+    "connection_error": "Connection failed / Unreachable"
+  },
+  "Memgraph": {
+    "data_source": "LIVE_MEASURED",
+    "specs": "0.5 vCPU, 512 MB RAM (In-Memory C++ Engine)",
+    "ingest": {
+      "platform": "Memgraph",
+      "total_nodes": 74062,
+      "total_edges": 150000,
+      "nodes_ingest_time_sec": 4.54,
+      "edges_ingest_time_sec": 7.97,
+      "total_wall_clock_sec": 12.51,
+      "nodes_per_sec": 16295.73,
+      "edges_per_sec": 18823.88,
+      "overall_items_per_sec": 17905.66
+    },
+    "read": {
+      "platform": "Memgraph",
+      "cold_start_ms": 82.67,
+      "1hop_traversal": {
+        "count": 100,
+        "p50": 1.79,
+        "p90": 3.63,
+        "p95": 6.88,
+        "p99": 48.33,
+        "mean": 3.51,
+        "min": 1.2,
+        "max": 56.95,
+        "std": 7.81
+      },
+      "2hop_traversal": {
+        "count": 100,
+        "p50": 1.81,
+        "p90": 4.81,
+        "p95": 7.23,
+        "p99": 36.08,
+        "mean": 3.37,
+        "min": 1.12,
+        "max": 60.7,
+        "std": 7.19
+      },
+      "3hop_traversal": {
+        "count": 100,
+        "p50": 1.53,
+        "p90": 2.65,
+        "p95": 3.94,
+        "p99": 9.61,
+        "mean": 1.95,
+        "min": 0.98,
+        "max": 12.24,
+        "std": 1.6
+      },
+      "point_lookup": {
+        "count": 100,
+        "p50": 1.54,
+        "p90": 2.45,
+        "p95": 2.89,
+        "p99": 6.31,
+        "mean": 1.81,
+        "min": 1.14,
+        "max": 8.6,
+        "std": 0.95
+      },
+      "indexed_lookup": {
+        "count": 100,
+        "p50": 4.22,
+        "p90": 6.06,
+        "p95": 6.69,
+        "p99": 9.05,
+        "mean": 4.68,
+        "min": 3.53,
+        "max": 9.38,
+        "std": 1.17
+      },
+      "aggregations": {
+        "count": 100,
+        "p50": 328.27,
+        "p90": 508.96,
+        "p95": 586.78,
+        "p99": 784.3,
+        "mean": 369.76,
+        "min": 222.98,
+        "max": 813.87,
+        "std": 109.8
+      }
+    },
+    "concurrency": {
+      "1": {
+        "count": 2436,
+        "p50": 1.74,
+        "p90": 3.11,
+        "p95": 3.64,
+        "p99": 6.91,
+        "mean": 2.03,
+        "min": 0.88,
+        "max": 19.26,
+        "std": 1.17,
+        "sustained_qps": 485.58
+      },
+      "10": {
+        "count": 4445,
+        "p50": 7.96,
+        "p90": 13.9,
+        "p95": 16.53,
+        "p99": 107.89,
+        "mean": 11.22,
+        "min": 1.57,
+        "max": 795.16,
+        "std": 25.62,
+        "sustained_qps": 885.78
+      },
+      "40": {
+        "count": 3606,
+        "p50": 34.38,
+        "p90": 71.71,
+        "p95": 98.85,
+        "p99": 570.99,
+        "mean": 54.28,
+        "min": 2.05,
+        "max": 3130.22,
+        "std": 131.18,
+        "sustained_qps": 702.31
+      }
+    },
+    "footprint": {
+      "stored_size_mb": "In-memory RAM pool",
+      "memory_usage_mb": "RAM usage allocated dynamically (< 512 MB Container Cap)",
+      "details": [
+        {
+          "storage info": "name",
+          "value": "memgraph"
+        },
+        {
+          "storage info": "vertex_count",
+          "value": 74062
+        },
+        {
+          "storage info": "edge_count",
+          "value": 151091
+        },
+        {
+          "storage info": "average_degree",
+          "value": 4.080122059895763
+        },
+        {
+          "storage info": "vm_max_map_count",
+          "value": 262144
+        },
+        {
+          "storage info": "memory_res",
+          "value": "213.52MiB"
+        },
+        {
+          "storage info": "disk_usage",
+          "value": "205.43MiB"
+        },
+        {
+          "storage info": "memory_tracked",
+          "value": "219.57MiB"
+        },
+        {
+          "storage info": "allocation_limit",
+          "value": "5.64GiB"
+        },
+        {
+          "storage info": "global_isolation_level",
+          "value": "SNAPSHOT_ISOLATION"
+        },
+        {
+          "storage info": "session_isolation_level",
+          "value": ""
+        },
+        {
+          "storage info": "next_session_isolation_level",
+          "value": ""
+        },
+        {
+          "storage info": "storage_mode",
+          "value": "IN_MEMORY_TRANSACTIONAL"
+        }
+      ]
+    }
+  },
+  "FalkorDB": {
+    "data_source": "LIVE_MEASURED",
+    "specs": "0.5 vCPU, 512 MB RAM (Redis Graph Module)",
+    "ingest": {
+      "platform": "FalkorDB",
+      "total_nodes": 74062,
+      "total_edges": 150000,
+      "nodes_ingest_time_sec": 2.2,
+      "edges_ingest_time_sec": 18.43,
+      "total_wall_clock_sec": 20.63,
+      "nodes_per_sec": 33717.14,
+      "edges_per_sec": 8138.46,
+      "overall_items_per_sec": 10862.25
+    },
+    "read": {
+      "platform": "FalkorDB",
+      "cold_start_ms": 15.33,
+      "1hop_traversal": {
+        "count": 100,
+        "p50": 0.99,
+        "p90": 1.79,
+        "p95": 2.36,
+        "p99": 3.04,
+        "mean": 1.38,
+        "min": 0.77,
+        "max": 19.03,
+        "std": 1.83
+      },
+      "2hop_traversal": {
+        "count": 100,
+        "p50": 0.91,
+        "p90": 1.49,
+        "p95": 1.77,
+        "p99": 1.94,
+        "mean": 1.03,
+        "min": 0.74,
+        "max": 2.01,
+        "std": 0.3
+      },
+      "3hop_traversal": {
+        "count": 100,
+        "p50": 0.93,
+        "p90": 1.51,
+        "p95": 1.86,
+        "p99": 2.4,
+        "mean": 1.08,
+        "min": 0.79,
+        "max": 2.46,
+        "std": 0.36
+      },
+      "point_lookup": {
+        "count": 100,
+        "p50": 0.92,
+        "p90": 1.43,
+        "p95": 1.84,
+        "p99": 2.14,
+        "mean": 1.04,
+        "min": 0.78,
+        "max": 2.48,
+        "std": 0.32
+      },
+      "indexed_lookup": {
+        "count": 100,
+        "p50": 1.73,
+        "p90": 2.66,
+        "p95": 3.04,
+        "p99": 3.48,
+        "mean": 1.92,
+        "min": 1.41,
+        "max": 3.62,
+        "std": 0.48
+      },
+      "aggregations": {
+        "count": 100,
+        "p50": 387.65,
+        "p90": 513.9,
+        "p95": 588.25,
+        "p99": 784.32,
+        "mean": 398.86,
+        "min": 242.47,
+        "max": 787.64,
+        "std": 99.35
+      }
+    },
+    "concurrency": {
+      "1": {
+        "count": 3079,
+        "p50": 1.39,
+        "p90": 2.32,
+        "p95": 2.78,
+        "p99": 4.36,
+        "mean": 1.61,
+        "min": 0.74,
+        "max": 18.76,
+        "std": 0.96,
+        "sustained_qps": 613.72
+      },
+      "10": {
+        "count": 3839,
+        "p50": 4.25,
+        "p90": 67.11,
+        "p95": 71.65,
+        "p99": 77.62,
+        "mean": 13.1,
+        "min": 1.18,
+        "max": 87.55,
+        "std": 22.53,
+        "sustained_qps": 757.44
+      },
+      "40": {
+        "count": 4616,
+        "p50": 22.24,
+        "p90": 89.8,
+        "p95": 97.09,
+        "p99": 119.32,
+        "mean": 43.56,
+        "min": 1.45,
+        "max": 166.82,
+        "std": 36.13,
+        "sustained_qps": 918.56
+      }
+    },
+    "footprint": {
+      "stored_size_mb": "In-memory",
+      "memory_usage_mb": "< 512 MB Container Cap"
+    }
+  },
   "K\u00f9zu DB": {
     "data_source": "LIVE_MEASURED",
     "specs": "0.5 vCPU, 512 MB RAM (Embedded Columnar Engine)",
@@ -6,119 +380,119 @@
       "platform": "K\u00f9zu DB",
       "total_nodes": 74062,
       "total_edges": 150000,
-      "nodes_ingest_time_sec": 11.26,
-      "edges_ingest_time_sec": 349.72,
-      "total_wall_clock_sec": 360.97,
-      "nodes_per_sec": 6578.1,
-      "edges_per_sec": 428.92,
-      "overall_items_per_sec": 620.71
+      "nodes_ingest_time_sec": 0.62,
+      "edges_ingest_time_sec": 0.56,
+      "total_wall_clock_sec": 1.18,
+      "nodes_per_sec": 119398.24,
+      "edges_per_sec": 266888.43,
+      "overall_items_per_sec": 189509.41
     },
     "read": {
       "platform": "K\u00f9zu DB",
-      "cold_start_ms": 96.26,
+      "cold_start_ms": 27.19,
       "1hop_traversal": {
         "count": 100,
-        "p50": 7.93,
-        "p90": 10.44,
-        "p95": 10.73,
-        "p99": 15.91,
-        "mean": 8.63,
-        "min": 3.58,
-        "max": 76.38,
-        "std": 7.06
+        "p50": 3.12,
+        "p90": 4.59,
+        "p95": 4.94,
+        "p99": 6.53,
+        "mean": 3.33,
+        "min": 1.79,
+        "max": 12.23,
+        "std": 1.25
       },
       "2hop_traversal": {
         "count": 100,
-        "p50": 9.19,
-        "p90": 13.33,
-        "p95": 14.48,
-        "p99": 28.35,
-        "mean": 10.37,
-        "min": 6.12,
-        "max": 57.6,
-        "std": 5.83
+        "p50": 6.17,
+        "p90": 7.86,
+        "p95": 9.16,
+        "p99": 14.96,
+        "mean": 6.49,
+        "min": 4.27,
+        "max": 16.35,
+        "std": 1.88
       },
       "3hop_traversal": {
         "count": 100,
-        "p50": 11.25,
-        "p90": 14.22,
-        "p95": 15.18,
-        "p99": 56.93,
-        "mean": 12.32,
-        "min": 6.19,
-        "max": 58.43,
-        "std": 8.05
+        "p50": 4.97,
+        "p90": 6.72,
+        "p95": 8.26,
+        "p99": 23.98,
+        "mean": 5.88,
+        "min": 3.91,
+        "max": 28.56,
+        "std": 3.56
       },
       "point_lookup": {
         "count": 100,
-        "p50": 47.07,
-        "p90": 58.44,
-        "p95": 63.18,
-        "p99": 68.93,
-        "mean": 47.79,
-        "min": 28.31,
-        "max": 69.71,
-        "std": 9.02
+        "p50": 17.17,
+        "p90": 20.1,
+        "p95": 21.36,
+        "p99": 24.63,
+        "mean": 17.66,
+        "min": 15.15,
+        "max": 24.94,
+        "std": 1.99
       },
       "indexed_lookup": {
         "count": 100,
-        "p50": 5.12,
-        "p90": 7.53,
-        "p95": 8.06,
-        "p99": 8.91,
-        "mean": 5.33,
-        "min": 2.82,
-        "max": 17.87,
-        "std": 1.9
+        "p50": 2.67,
+        "p90": 3.51,
+        "p95": 4.04,
+        "p99": 4.94,
+        "mean": 2.87,
+        "min": 1.85,
+        "max": 7.27,
+        "std": 0.74
       },
       "aggregations": {
         "count": 100,
-        "p50": 234.35,
-        "p90": 258.39,
-        "p95": 267.86,
-        "p99": 305.9,
-        "mean": 235.85,
-        "min": 153.99,
-        "max": 598.04,
-        "std": 43.34
+        "p50": 73.69,
+        "p90": 98.63,
+        "p95": 118.79,
+        "p99": 127.81,
+        "mean": 78.26,
+        "min": 58.72,
+        "max": 137.31,
+        "std": 16.71
       }
     },
     "concurrency": {
       "1": {
-        "count": 210,
-        "p50": 8.69,
-        "p90": 82.37,
-        "p95": 87.0,
-        "p99": 91.67,
-        "mean": 23.77,
-        "min": 4.68,
-        "max": 166.26,
-        "std": 30.97,
-        "sustained_qps": 41.92
+        "count": 211,
+        "p50": 3.42,
+        "p90": 79.13,
+        "p95": 127.12,
+        "p99": 147.78,
+        "mean": 23.71,
+        "min": 1.75,
+        "max": 416.24,
+        "std": 48.16,
+        "sustained_qps": 42.1
       },
       "10": {
-        "count": 160,
-        "p50": 177.79,
-        "p90": 632.15,
-        "p95": 987.44,
-        "p99": 1787.89,
-        "mean": 288.71,
-        "min": 10.9,
-        "max": 1866.75,
-        "std": 348.48,
-        "sustained_qps": 31.14
+        "count": 243,
+        "p50": 141.37,
+        "p90": 435.01,
+        "p95": 583.87,
+        "p99": 1357.66,
+        "mean": 211.26,
+        "min": 3.38,
+        "max": 1570.29,
+        "std": 233.63,
+        "sustained_qps": 40.64
       },
       "40": {
-        "count": 195,
-        "p50": 225.48,
-        "p90": 650.08,
-        "p95": 751.24,
-        "p99": 1311.75,
-        "mean": 303.4,
-        "min": 13.22,
-        "max": 1662.39,
-        "std": 271.69,
-        "sustained_qps": 37.74
+        "count": 270,
+        "p50": 169.08,
+        "p90": 510.24,
+        "p95": 716.03,
+        "p99": 1066.53,
+        "mean": 229.25,
+        "min": 5.22,
+        "max": 1265.58,
+        "std": 228.49,
+        "sustained_qps": 52.89
       }
     },
     "footprint": {

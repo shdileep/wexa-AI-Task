@@ -12,7 +12,8 @@ dataset/data/*
 !dataset/data/edges.csv
 !dataset/soc-pokec-relationships.csv
 kuzu_db_data*
-scratch_kuzu*
+kuzu_test_db*
+scratch_*
 *.db
 *.parquet
 *.wal

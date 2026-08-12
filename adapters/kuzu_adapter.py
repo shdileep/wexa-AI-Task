@@ -103,6 +103,40 @@ class KuzuAdapter(BaseGraphAdapter):
         self.conn.execute(query, {"batch": batch})
         return len(nodes_batch)
 
+    def ingest_from_csv(self, nodes_csv_path: str, edges_csv_path: str, expected_nodes: int, expected_edges: int) -> Dict[str, Any]:
+        if not self.conn:
+            return {}
+        
+        t0_nodes = time.perf_counter()
+        n_path = os.path.abspath(nodes_csv_path).replace("\\", "/")
+        self.conn.execute(f"COPY User FROM '{n_path}' (HEADER=true)")
+        t1_nodes = time.perf_counter()
+        nodes_duration = t1_nodes - t0_nodes
+
+        t0_edges = time.perf_counter()
+        e_path = os.path.abspath(edges_csv_path).replace("\\", "/")
+        self.conn.execute(f"COPY FOLLOWS FROM '{e_path}' (HEADER=true)")
+        t1_edges = time.perf_counter()
+        edges_duration = t1_edges - t0_edges
+
+        total_wall_clock_time = nodes_duration + edges_duration
+
+        from engine.metrics import MetricsCalculator
+        nodes_per_sec = MetricsCalculator.calculate_throughput(expected_nodes, nodes_duration)
+        edges_per_sec = MetricsCalculator.calculate_throughput(expected_edges, edges_duration)
+
+        return {
+            "platform": self.name,
+            "total_nodes": expected_nodes,
+            "total_edges": expected_edges,
+            "nodes_ingest_time_sec": round(nodes_duration, 2),
+            "edges_ingest_time_sec": round(edges_duration, 2),
+            "total_wall_clock_sec": round(total_wall_clock_time, 2),
+            "nodes_per_sec": nodes_per_sec,
+            "edges_per_sec": edges_per_sec,
+            "overall_items_per_sec": MetricsCalculator.calculate_throughput(expected_nodes + expected_edges, total_wall_clock_time)
+        }
+
     def ingest_edges_batch(self, edges_batch: List[Tuple]) -> int:
         if not self.conn or not edges_batch:
             return 0

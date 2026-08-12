@@ -20,13 +20,16 @@ class IngestEngine:
         
         # Determine expected counts from source CSV files for dataset parity assertion
         with open(nodes_csv_path, mode="r", encoding="utf-8") as f:
-            expected_nodes = max(0, sum(1 for _ in f) - 1)
+            expected_nodes = max(0, sum(1 for line in f if line.strip()) - 1)
         with open(edges_csv_path, mode="r", encoding="utf-8") as f:
-            expected_edges = max(0, sum(1 for _ in f) - 1)
+            expected_edges = max(0, sum(1 for line in f if line.strip()) - 1)
 
         # 1. Reset database & create schema
         self.adapter.clear_database()
         self.adapter.create_schema_and_indexes()
+
+        if hasattr(self.adapter, "ingest_from_csv") and callable(getattr(self.adapter, "ingest_from_csv")):
+            return self.adapter.ingest_from_csv(nodes_csv_path, edges_csv_path, expected_nodes, expected_edges)
 
         # 2. Read and Ingest Nodes
         nodes_batch = []
@@ -37,6 +40,8 @@ class IngestEngine:
             reader = csv.reader(f)
             header = next(reader)
             for row in reader:
+                if not row or len(row) < 5 or not row[0].strip():
+                    continue
                 # row: id, username, age, category, created_at
                 nodes_batch.append((int(row[0]), row[1], int(row[2]), row[3], row[4]))
                 if len(nodes_batch) >= self.batch_size:
@@ -58,6 +63,8 @@ class IngestEngine:
             reader = csv.reader(f)
             header = next(reader)
             for row in reader:
+                if not row or len(row) < 4 or not row[0].strip() or not row[1].strip():
+                    continue
                 # row: src_id, dst_id, weight, interaction_count
                 edges_batch.append((int(row[0]), int(row[1]), float(row[2]), int(row[3])))
                 if len(edges_batch) >= self.batch_size:

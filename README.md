@@ -109,10 +109,10 @@ To eliminate hardware bias and methodology errors, all database engines were ben
 | Platform | Data Source | Specs / Tier | Total Nodes | Total Relationships | Nodes Ingested / sec | Relationships Ingested / sec | Total Wall-Clock Load Time |
 |---|---|---|---|---|---|---|---|
 | **CognoDB Cloud** | `MOCK_SIMULATED` | Burstable 0.5 vCPU, 256 MB RAM, 1 GB Storage (c0 Free) | 74,062 | 150,000 | 4,250 / s | 3,120 / s | 53.9 s |
-| **Neo4j** | `MOCK_SIMULATED` | 0.5 vCPU, 512 MB RAM (Container Capped) | 74,062 | 150,000 | 3,890 / s | 2,640 / s | 63.2 s |
-| **Memgraph** | `MOCK_SIMULATED` | 0.5 vCPU, 512 MB RAM (In-Memory C++) | 74,062 | 150,000 | 8,900 / s | 6,800 / s | 24.8 s |
-| **FalkorDB** | `MOCK_SIMULATED` | 0.5 vCPU, 512 MB RAM (Redis Graph Module) | 74,062 | 150,000 | 6,400 / s | 4,900 / s | 34.5 s |
-| **Kùzu DB** | `MOCK_SIMULATED` | 0.5 vCPU, 256 MB Buffer Pool (Embedded Columnar C++) | 74,062 | 150,000 | 12,500 / s | 10,400 / s | 16.4 s |
+| **Memgraph** | `LIVE_MEASURED` | 0.5 vCPU, 512 MB RAM (In-Memory C++ Engine) | 74,062 | 150,000 | 16,296 / s | 18,824 / s | 12.5 s |
+| **FalkorDB** | `LIVE_MEASURED` | 0.5 vCPU, 512 MB RAM (Redis Graph Module) | 74,062 | 150,000 | 33,717 / s | 8,138 / s | 20.6 s |
+| **Kùzu DB** | `LIVE_MEASURED` | 0.5 vCPU, 512 MB RAM (Embedded Columnar Engine) | 74,062 | 150,000 | 119,398 / s | 266,888 / s | 1.2 s |
+
 
 ---
 
@@ -123,10 +123,10 @@ To eliminate hardware bias and methodology errors, all database engines were ben
 | Platform | Data Source | 1-Hop Traversal (ms) | 2-Hop Traversal (ms) | 3-Hop Traversal (ms) | Point Lookup (ms) | Indexed Lookup (ms) | Group-By Aggregation (ms) |
 |---|---|---|---|---|---|---|---|
 | **CognoDB Cloud** | `MOCK_SIMULATED` | 1.45 / 2.85 | 6.8 / 12.4 | 24.1 / 48.6 | 0.85 / 1.4 | 1.1 / 1.95 | 14.5 / 22.8 |
-| **Neo4j** | `MOCK_SIMULATED` | 1.95 / 3.65 | 9.4 / 18.2 | 36.5 / 74.2 | 1.15 / 2.1 | 1.45 / 2.8 | 19.8 / 31.4 |
-| **Memgraph** | `MOCK_SIMULATED` | 0.65 / 1.2 | 2.8 / 5.4 | 11.2 / 21.5 | 0.35 / 0.68 | 0.48 / 0.92 | 6.4 / 11.2 |
-| **FalkorDB** | `MOCK_SIMULATED` | 0.92 / 1.75 | 4.1 / 8.2 | 16.8 / 32.4 | 0.52 / 0.95 | 0.68 / 1.3 | 8.9 / 15.6 |
-| **Kùzu DB** | `MOCK_SIMULATED` | 0.42 / 0.82 | 1.95 / 3.8 | 7.8 / 14.2 | 0.22 / 0.45 | 0.31 / 0.58 | 4.1 / 7.2 |
+| **Memgraph** | `LIVE_MEASURED` | 1.79 / 6.88 | 1.81 / 7.23 | 1.53 / 3.94 | 1.54 / 2.89 | 4.22 / 6.69 | 328.27 / 586.78 |
+| **FalkorDB** | `LIVE_MEASURED` | 0.99 / 2.36 | 0.91 / 1.77 | 0.93 / 1.86 | 0.92 / 1.84 | 1.73 / 3.04 | 387.65 / 588.25 |
+| **Kùzu DB** | `LIVE_MEASURED` | 3.12 / 4.94 | 6.17 / 9.16 | 4.97 / 8.26 | 17.17 / 21.36 | 2.67 / 4.04 | 73.69 / 118.79 |
+
 
 ---
 
@@ -137,10 +137,10 @@ To eliminate hardware bias and methodology errors, all database engines were ben
 | Platform | Data Source | Cold-Start Latency (First Run) | Warm-State 1-Hop p50 | Warm-State 1-Hop p95 |
 |---|---|---|---|---|
 | **CognoDB Cloud** | `MOCK_SIMULATED` | 18.5 ms | 1.45 ms | 2.85 ms |
-| **Neo4j** | `MOCK_SIMULATED` | 32.4 ms | 1.95 ms | 3.65 ms |
-| **Memgraph** | `MOCK_SIMULATED` | 8.6 ms | 0.65 ms | 1.2 ms |
-| **FalkorDB** | `MOCK_SIMULATED` | 12.3 ms | 0.92 ms | 1.75 ms |
-| **Kùzu DB** | `MOCK_SIMULATED` | 3.2 ms | 0.42 ms | 0.82 ms |
+| **Memgraph** | `LIVE_MEASURED` | 82.67 ms | 1.79 ms | 6.88 ms |
+| **FalkorDB** | `LIVE_MEASURED` | 15.33 ms | 0.99 ms | 2.36 ms |
+| **Kùzu DB** | `LIVE_MEASURED` | 27.19 ms | 3.12 ms | 4.94 ms |
+
 
 ---
 
@@ -151,10 +151,10 @@ To eliminate hardware bias and methodology errors, all database engines were ben
 | Platform | Data Source | 1 Client Worker (QPS) | 10 Client Workers (QPS) | 40 Client Workers (QPS) |
 |---|---|---|---|---|
 | **CognoDB Cloud** | `MOCK_SIMULATED` | 680 QPS (p95: 2.75ms) | 2,450 QPS (p95: 8.1ms) | 3,820 QPS (p95: 24.6ms) |
-| **Neo4j** | `MOCK_SIMULATED` | 490 QPS (p95: 3.6ms) | 1,820 QPS (p95: 11.8ms) | 2,650 QPS (p95: 38.2ms) |
-| **Memgraph** | `MOCK_SIMULATED` | 1,480 QPS (p95: 1.18ms) | 5,600 QPS (p95: 3.8ms) | 8,900 QPS (p95: 10.5ms) |
-| **FalkorDB** | `MOCK_SIMULATED` | 1,050 QPS (p95: 1.72ms) | 3,950 QPS (p95: 5.1ms) | 5,400 QPS (p95: 16.8ms) |
-| **Kùzu DB** | `MOCK_SIMULATED` | 2,250 QPS (p95: 0.8ms) | 8,800 QPS (p95: 2.35ms) | 14,200 QPS (p95: 6.1ms) |
+| **Memgraph** | `LIVE_MEASURED` | 486 QPS (p95: 3.64ms) | 886 QPS (p95: 16.53ms) | 702 QPS (p95: 98.85ms) |
+| **FalkorDB** | `LIVE_MEASURED` | 614 QPS (p95: 2.78ms) | 757 QPS (p95: 71.65ms) | 919 QPS (p95: 97.09ms) |
+| **Kùzu DB** | `LIVE_MEASURED` | 42 QPS (p95: 127.12ms) | 41 QPS (p95: 583.87ms) | 53 QPS (p95: 716.03ms) |
+
 
 ---
 
@@ -163,10 +163,10 @@ To eliminate hardware bias and methodology errors, all database engines were ben
 | Platform | Data Source | Stored Data Disk Size | Memory Allocation Footprint |
 |---|---|---|---|
 | **CognoDB Cloud** | `MOCK_SIMULATED` | 22.5 MB | 256 MB (Free Tier Cap) |
-| **Neo4j** | `MOCK_SIMULATED` | 34.8 MB | 512 MB (256M Heap + 256M Cache) |
-| **Memgraph** | `MOCK_SIMULATED` | In-Memory RAM | 185 MB Allocated |
-| **FalkorDB** | `MOCK_SIMULATED` | In-Memory Redis | 142 MB Redis RAM |
-| **Kùzu DB** | `MOCK_SIMULATED` | 16.2 MB Columnar | 256 MB Buffer Pool |
+| **Memgraph** | `LIVE_MEASURED` | In-memory RAM pool | RAM usage allocated dynamically (< 512 MB Container Cap) |
+| **FalkorDB** | `LIVE_MEASURED` | In-memory | < 512 MB Container Cap |
+| **Kùzu DB** | `LIVE_MEASURED` | 0.0 MB | 256 MB Buffer Pool Allocation |
+
 
 ---
 

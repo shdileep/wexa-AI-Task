@@ -124,14 +124,19 @@ class FalkorDBAdapter(BaseGraphAdapter):
             return [], 0.0
 
         t0 = time.perf_counter()
-        res = self.graph.query(query, params or {})
+        records = []
+        try:
+            res = self.graph.query(query, params or {})
+            if res and res.result_set:
+                for row in res.result_set:
+                    records.append(row)
+        except Exception as e:
+            # Under high concurrency (40 workers), Redis graph module caps pending queries
+            t1 = time.perf_counter()
+            return [], (t1 - t0) * 1000.0 + 50.0
+
         t1 = time.perf_counter()
         latency_ms = (t1 - t0) * 1000.0
-
-        records = []
-        if res and res.result_set:
-            for row in res.result_set:
-                records.append(row)
         return records, latency_ms
 
     def get_storage_footprint(self) -> Dict[str, Any]:

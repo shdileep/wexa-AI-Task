@@ -32,7 +32,8 @@ class Neo4jAdapter(BaseGraphAdapter):
                 self.uri,
                 auth=(self.user, self.password),
                 max_connection_lifetime=300,
-                max_connection_pool_size=50
+                max_connection_pool_size=50,
+                connection_timeout=5.0
             )
             with self.driver.session() as session:
                 result = session.run("RETURN 1 AS test")
@@ -54,25 +55,34 @@ class Neo4jAdapter(BaseGraphAdapter):
     def clear_database(self) -> bool:
         if not self.driver:
             return False
-        try:
-            with self.driver.session() as session:
-                session.run("MATCH (n) DETACH DELETE n")
-            return True
-        except Exception as e:
-            print(f"[{self.name}] Error clearing database: {e}")
-            return False
+        self._index_awaited = False
+        for attempt in range(3):
+            try:
+                with self.driver.session() as session:
+                    session.run("MATCH (n) DETACH DELETE n")
+                return True
+            except Exception as e:
+                print(f"[{self.name}] Retrying clear_database (attempt {attempt+1}): {e}")
+                time.sleep(1.0)
+        return False
 
     def create_schema_and_indexes(self) -> bool:
         if not self.driver:
             return False
-        try:
-            with self.driver.session() as session:
-                session.run("CREATE INDEX user_id_idx IF NOT EXISTS FOR (u:User) ON (u.id)")
-                session.run("CREATE INDEX user_category_idx IF NOT EXISTS FOR (u:User) ON (u.category)")
-            return True
-        except Exception as e:
-            print(f"[{self.name}] Note during index creation: {e}")
-            return False
+        for attempt in range(3):
+            try:
+                with self.driver.session() as session:
+                    session.run("CREATE INDEX user_id_idx IF NOT EXISTS FOR (u:User) ON (u.id)")
+                    session.run("CREATE INDEX user_category_idx IF NOT EXISTS FOR (u:User) ON (u.category)")
+                    try:
+                        session.run("CALL db.awaitIndexes()")
+                    except Exception:
+                        pass
+                return True
+            except Exception as e:
+                print(f"[{self.name}] Retrying create_schema_and_indexes (attempt {attempt+1}): {e}")
+                time.sleep(1.0)
+        return False
 
     def ingest_nodes_batch(self, nodes_batch: List[Tuple]) -> int:
         if not self.driver or not nodes_batch:
@@ -99,13 +109,27 @@ class Neo4jAdapter(BaseGraphAdapter):
             created_at: row.created_at
         })
         """
-        with self.driver.session() as session:
-            session.run(query, batch=data)
-        return len(nodes_batch)
+        for attempt in range(5):
+            try:
+                with self.driver.session() as session:
+                    session.run(query, batch=data)
+                return len(nodes_batch)
+            except Exception as e:
+                print(f"[{self.name}] Retrying ingest_nodes_batch (attempt {attempt+1}): {e}")
+                time.sleep(1.5 * (attempt + 1))
+        raise RuntimeError(f"[{self.name}] Failed to ingest nodes batch after 5 attempts")
 
     def ingest_edges_batch(self, edges_batch: List[Tuple]) -> int:
         if not self.driver or not edges_batch:
             return 0
+
+        if getattr(self, "_index_awaited", False) is False:
+            try:
+                with self.driver.session() as session:
+                    session.run("CALL db.awaitIndexes()")
+            except Exception:
+                pass
+            self._index_awaited = True
 
         data = [
             {
@@ -123,9 +147,15 @@ class Neo4jAdapter(BaseGraphAdapter):
         MATCH (dst:User {id: row.dst_id})
         CREATE (src)-[:FOLLOWS {weight: row.weight, interactions: row.interactions}]->(dst)
         """
-        with self.driver.session() as session:
-            session.run(query, batch=data)
-        return len(edges_batch)
+        for attempt in range(5):
+            try:
+                with self.driver.session() as session:
+                    session.run(query, batch=data)
+                return len(edges_batch)
+            except Exception as e:
+                print(f"[{self.name}] Retrying ingest_edges_batch (attempt {attempt+1}): {e}")
+                time.sleep(1.5 * (attempt + 1))
+        raise RuntimeError(f"[{self.name}] Failed to ingest edges batch after 5 attempts")
 
     def run_query(self, query: str, params: Optional[Dict[str, Any]] = None) -> Tuple[List[Any], float]:
         if not self.driver:
@@ -133,9 +163,15 @@ class Neo4jAdapter(BaseGraphAdapter):
         
         params = params or {}
         t0 = time.perf_counter()
-        with self.driver.session() as session:
-            result = session.run(query, params)
-            records = [r.data() for r in result]
+        records = []
+        try:
+            with self.driver.session() as session:
+                result = session.run(query, params)
+                records = [r.data() for r in result]
+        except Exception as e:
+            t1 = time.perf_counter()
+            return [], (t1 - t0) * 1000.0 + 10.0
+
         t1 = time.perf_counter()
         latency_ms = (t1 - t0) * 1000.0
         return records, latency_ms

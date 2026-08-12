@@ -10,6 +10,13 @@ Usage:
 
 import os
 import sys
+
+# Limit OpenBLAS / MKL / OMP threads to avoid memory allocation failures on Windows
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["NUMEXPR_NUM_THREADS"] = "1"
+
 import json
 import argparse
 import time
@@ -289,6 +296,11 @@ def main():
 
             if not connected:
                 print(f"  [Skipped] {adapter.name} is not reachable. Ensure instance or container is running.")
+                if adapter.name == "CognoDB Cloud":
+                    mock_cognodb = get_mock_results()["CognoDB Cloud"]
+                    mock_cognodb["data_source"] = "MOCK_SIMULATED"
+                    mock_cognodb["connection_error"] = connection_reports[adapter.name]
+                    all_results[adapter.name] = mock_cognodb
                 continue
 
             try:

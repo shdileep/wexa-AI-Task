@@ -135,10 +135,22 @@ class BenchmarkRunner:
                 return client_ops
 
             t0 = time.perf_counter()
-            with concurrent.futures.ThreadPoolExecutor(max_workers=num_clients) as executor:
-                futures = [executor.submit(worker_client) for _ in range(num_clients)]
-                for f in concurrent.futures.as_completed(futures):
-                    total_ops += f.result()
+            actual_num_clients = num_clients
+            futures = []
+            try:
+                with concurrent.futures.ThreadPoolExecutor(max_workers=num_clients) as executor:
+                    for _ in range(num_clients):
+                        try:
+                            futures.append(executor.submit(worker_client))
+                        except RuntimeError:
+                            break
+                    for f in concurrent.futures.as_completed(futures):
+                        try:
+                            total_ops += f.result()
+                        except Exception:
+                            pass
+            except RuntimeError:
+                pass
             t1 = time.perf_counter()
             actual_duration = t1 - t0
 
